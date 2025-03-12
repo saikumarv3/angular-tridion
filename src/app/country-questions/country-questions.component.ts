@@ -26,23 +26,27 @@ import { TridionService, TridionContent } from '../services/tridion.service';
       </div>
       
       <div class="card-body">
-        <div *ngFor="let question of commonQuestions" class="question-item">
+        <div *ngFor="let question of commonQuestions" 
+             class="question-item"
+             [class.center-content]="isStateQuestion(question) || (isDobQuestion(question) && showDobQuestion())">
           <p>{{ question }}</p>
           
           <ng-container *ngIf="!isStateQuestion(question) && !isDobQuestion(question)">
-            <div class="btn-group">
-              <button 
-                class="btn" 
-                [class.active]="answers[question] === true"
-                (click)="setAnswer(question, true)">
-                {{ content?.buttonLabels?.yes }}
-              </button>
-              <button 
-                class="btn" 
-                [class.active]="answers[question] === false"
-                (click)="setAnswer(question, false)">
-                {{ content?.buttonLabels?.no }}
-              </button>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" 
+                       [name]="question"
+                       [checked]="answers[question] === true"
+                       (change)="setAnswer(question, true)">
+                <span>{{ content?.buttonLabels?.yes }}</span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" 
+                       [name]="question"
+                       [checked]="answers[question] === false"
+                       (change)="setAnswer(question, false)">
+                <span>{{ content?.buttonLabels?.no }}</span>
+              </label>
             </div>
           </ng-container>
 
@@ -99,19 +103,21 @@ import { TridionService, TridionContent } from '../services/tridion.service';
           <h4>{{ content?.countrySpecificQuestions?.title }}</h4>
           <div *ngFor="let question of countrySpecificQuestions" class="question-item">
             <p>{{ question }}</p>
-            <div class="btn-group">
-              <button 
-                class="btn" 
-                [class.active]="answers[question] === true"
-                (click)="setAnswer(question, true)">
-                {{ content?.buttonLabels?.yes }}
-              </button>
-              <button 
-                class="btn" 
-                [class.active]="answers[question] === false"
-                (click)="setAnswer(question, false)">
-                {{ content?.buttonLabels?.no }}
-              </button>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" 
+                       [name]="question"
+                       [checked]="answers[question] === true"
+                       (change)="setAnswer(question, true)">
+                <span>{{ content?.buttonLabels?.yes }}</span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" 
+                       [name]="question"
+                       [checked]="answers[question] === false"
+                       (change)="setAnswer(question, false)">
+                <span>{{ content?.buttonLabels?.no }}</span>
+              </label>
             </div>
           </div>
         </div>
