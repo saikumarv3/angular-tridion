@@ -185,23 +185,21 @@ export class CountryQuestionsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Get Tridion content
-    this.tridionService.getContent().subscribe(content => {
-      this.content = content;
-      if (content) {
-        this.states = content.states;
-        this.commonQuestions = [
-          content.commonQuestions.questions.passport,
-          content.commonQuestions.questions.travel,
-          content.commonQuestions.questions.age,
-          content.commonQuestions.questions.state
-        ];
-        // Only add DOB question if state is California
-        if (this.selectedState === 'California') {
-          this.commonQuestions.push(content.commonQuestions.questions.dob);
-        }
+    // Use cached content
+    this.content = this.tridionService.getCachedContent();
+    if (this.content) {
+      this.states = this.content.states;
+      this.commonQuestions = [
+        this.content.commonQuestions.questions.passport,
+        this.content.commonQuestions.questions.travel,
+        this.content.commonQuestions.questions.age,
+        this.content.commonQuestions.questions.state
+      ];
+      // Only add DOB question if state is California
+      if (this.selectedState === 'California') {
+        this.commonQuestions.push(this.content.commonQuestions.questions.dob);
       }
-    });
+    }
 
     // Subscribe to selected country
     this.questionsService.getSelectedCountry().subscribe(country => {

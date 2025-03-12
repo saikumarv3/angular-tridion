@@ -222,15 +222,9 @@ export class VerificationComponent implements OnInit, OnDestroy {
         }
         this.selectedCountry = country;
         
-        // Get content after we have the country
-        if (!this.content) {
-          this.tridionService.getContent().subscribe(content => {
-            this.content = content;
-            this.loadQuestionsIfReady();
-          });
-        } else {
-          this.loadQuestionsIfReady();
-        }
+        // Use cached content
+        this.content = this.tridionService.getCachedContent();
+        this.loadQuestionsIfReady();
       })
     );
   }
