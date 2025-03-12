@@ -1,0 +1,19 @@
+<!-- Country Selection Card -->
+<div class="card country-selection">
+  <div class="card-header">
+    <h3>Select Your Country</h3>
+  </div>
+  <div class="card-body">
+    <select class="form-control" [(ngModel)]="selectedCountry" (ngModelChange)="onCountryChange()">
+      <option value="">Choose a country</option>
+      <option *ngFor="let country of countries" [value]="country">{{ country }}</option>
+    </select>
+    
+    <div *ngIf="selectedCountry" class="selected-country mt-3">
+      Selected country: {{ selectedCountry }}
+    </div>
+  </div>
+</div>
+
+<!-- Questions Card -->
+<country-questions></country-questions> 

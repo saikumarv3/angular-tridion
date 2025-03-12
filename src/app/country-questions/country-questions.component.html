@@ -1,0 +1,104 @@
+<!-- Error Messages -->
+<div *ngFor="let error of getErrorMessages()" class="error-message">
+  {{ error }}
+</div>
+<div *ngIf="ageError" class="error-message">
+  {{ ageError }}
+</div>
+
+<div class="questions-card">
+  <div class="card">
+    <div class="card-header">
+      <h3>Travel Questions</h3>
+    </div>
+    <div class="card-body">
+      <div class="common-questions">
+        <h4>Common Questions</h4>
+        <div *ngFor="let question of commonQuestions; let i = index" class="question-item">
+          <p>{{ i + 1 }}. {{ question }}</p>
+          
+          <!-- State Dropdown -->
+          <div *ngIf="isStateQuestion(question)" class="state-select">
+            <select 
+              [value]="selectedState"
+              (change)="onStateChange($event)"
+              class="form-control">
+              <option value="">Select a state</option>
+              <option *ngFor="let state of states" [value]="state">
+                {{ state }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Date of Birth Dropdowns -->
+          <div *ngIf="isDobQuestion(question) && showDobQuestion()" class="dob-select">
+            <!-- Month Dropdown -->
+            <select 
+              [value]="selectedDob.month"
+              (change)="onDobChange('month', $event)"
+              class="form-control">
+              <option value="">Month</option>
+              <option *ngFor="let month of months" [value]="month">
+                {{ month }}
+              </option>
+            </select>
+
+            <!-- Day Dropdown -->
+            <select 
+              [value]="selectedDob.day"
+              (change)="onDobChange('day', $event)"
+              class="form-control">
+              <option value="">Day</option>
+              <option *ngFor="let day of days" [value]="day">
+                {{ day }}
+              </option>
+            </select>
+
+            <!-- Year Dropdown -->
+            <select 
+              [value]="selectedDob.year"
+              (change)="onDobChange('year', $event)"
+              class="form-control">
+              <option value="">Year</option>
+              <option *ngFor="let year of years" [value]="year">
+                {{ year }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Yes/No Buttons -->
+          <div *ngIf="!isStateQuestion(question) && !isDobQuestion(question)" class="btn-group">
+            <button [class.active]="answers[question] === true" 
+                    (click)="setAnswer(question, true)" 
+                    class="btn btn-outline-primary">Yes</button>
+            <button [class.active]="answers[question] === false" 
+                    (click)="setAnswer(question, false)" 
+                    class="btn btn-outline-primary">No</button>
+          </div>
+        </div>
+      </div>
+      
+      <div *ngIf="countrySpecificQuestions.length > 0" class="country-specific-questions">
+        <h4>{{ selectedCountry }} Specific Questions</h4>
+        <div *ngFor="let question of countrySpecificQuestions; let i = index" class="question-item">
+          <p>{{ i + 1 }}. {{ question }}</p>
+          <div class="btn-group">
+            <button [class.active]="answers[question] === true" 
+                    (click)="setAnswer(question, true)" 
+                    class="btn btn-outline-primary">Yes</button>
+            <button [class.active]="answers[question] === false" 
+                    (click)="setAnswer(question, false)" 
+                    class="btn btn-outline-primary">No</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Next Button -->
+<div class="next-button-container">
+  <button class="btn btn-primary" (click)="onNextClick()" [disabled]="!canProceed">
+    Next
+  </button>
+</div> 

@@ -1,0 +1,11 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  padding-top: 4rem; /* This should be more than the header height */
+  flex: 1;
+  background-color: #f5f5f5;
+}
