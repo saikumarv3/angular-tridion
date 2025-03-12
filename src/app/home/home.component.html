@@ -1,16 +1,16 @@
 <!-- Country Selection Card -->
-<div class="card country-selection">
+<div class="card country-selection" *ngIf="content">
   <div class="card-header">
-    <h3>Select Your Country</h3>
+    <h3>{{ content.homeTitle }}</h3>
   </div>
   <div class="card-body">
     <select class="form-control" [(ngModel)]="selectedCountry" (ngModelChange)="onCountryChange()">
-      <option value="">Choose a country</option>
-      <option *ngFor="let country of countries" [value]="country">{{ country }}</option>
+      <option value="">{{ content.countryPlaceholder }}</option>
+      <option *ngFor="let country of content.countries" [value]="country">{{ country }}</option>
     </select>
     
     <div *ngIf="selectedCountry" class="selected-country mt-3">
-      Selected country: {{ selectedCountry }}
+      {{ content.countrySelectLabel }}: {{ selectedCountry }}
     </div>
   </div>
 </div>

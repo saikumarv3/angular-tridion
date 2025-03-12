@@ -10,6 +10,13 @@ import { Subscription } from 'rxjs';
   standalone: true,
   imports: [CommonModule],
   template: `
+    <!-- Error Messages -->
+    <div class="error-messages" *ngIf="error">
+      <div class="error-card">
+        {{ error }}
+      </div>
+    </div>
+
     <div class="verification-container">
       <h1>{{ content?.verificationPage?.title || 'Verification' }}</h1>
       <p class="intro-message">{{ content?.verificationPage?.message || 'Please answer these verification questions before proceeding.' }}</p>
@@ -36,10 +43,6 @@ import { Subscription } from 'rxjs';
             </button>
           </div>
         </div>
-      </div>
-
-      <div *ngIf="error" class="error-message">
-        {{ error }}
       </div>
 
       <div class="button-container">
@@ -134,15 +137,6 @@ import { Subscription } from 'rxjs';
       }
     }
 
-    .error-message {
-      color: #dc3545;
-      margin: 15px 0;
-      padding: 10px;
-      border-radius: 4px;
-      background-color: #fff3f3;
-      text-align: center;
-    }
-
     .button-container {
       display: flex;
       justify-content: space-between;
@@ -234,7 +228,9 @@ export class VerificationComponent implements OnInit, OnDestroy {
   }
 
   isValid(): boolean {
-    return this.verificationQuestions.every(question => typeof this.answers[question] === 'boolean');
+    return this.verificationQuestions.every(question => 
+      typeof this.answers[question] === 'boolean'
+    );
   }
 
   onNext() {

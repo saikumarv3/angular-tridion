@@ -1,13 +1,22 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TridionService, TridionContent } from '../services/tridion.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.scss'
+  styleUrls: ['./header.component.scss']
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
+  content: TridionContent | null = null;
 
+  constructor(private tridionService: TridionService) {}
+
+  ngOnInit() {
+    this.tridionService.getContent().subscribe(content => {
+      this.content = content;
+    });
+  }
 }

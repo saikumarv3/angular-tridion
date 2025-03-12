@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
+import { TridionService, TridionContent } from './services/tridion.service';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-root',
@@ -25,4 +27,17 @@ import { FooterComponent } from './footer/footer.component';
     }
   `]
 })
-export class AppComponent {}
+export class AppComponent implements OnInit {
+  constructor(
+    private tridionService: TridionService,
+    private titleService: Title
+  ) {}
+
+  ngOnInit() {
+    this.tridionService.getContent().subscribe(content => {
+      if (content) {
+        this.titleService.setTitle(content.appTitle);
+      }
+    });
+  }
+}
