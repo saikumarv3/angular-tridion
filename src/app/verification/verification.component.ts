@@ -194,7 +194,6 @@ export class VerificationComponent implements OnInit, OnDestroy {
     // Get the selected country first
     this.subscriptions.push(
       this.questionsService.getSelectedCountry().subscribe(country => {
-        console.log('Selected country in verification:', country);
         if (!country) {
           // If no country is selected, redirect back to home
           this.router.navigate(['/home']);
@@ -222,10 +221,7 @@ export class VerificationComponent implements OnInit, OnDestroy {
 
   loadQuestionsIfReady() {
     if (this.content && this.selectedCountry) {
-      console.log('Loading questions for:', this.selectedCountry);
-      console.log('Available questions:', this.content.verificationPage.questions);
       this.verificationQuestions = this.content.verificationPage.questions[this.selectedCountry] || [];
-      console.log('Loaded questions:', this.verificationQuestions);
     }
   }
 

@@ -65,7 +65,6 @@ export class CountryQuestionsComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // Subscribe to selected country
     this.questionsService.getSelectedCountry().subscribe(country => {
-      console.log('Country in questions component:', country);
       this.selectedCountry = country;
       this.countrySpecificQuestions = this.questionsService.getCountrySpecificQuestions(country);
     });

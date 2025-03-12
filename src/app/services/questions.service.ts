@@ -70,7 +70,6 @@ export class QuestionsService {
   }
 
   getSelectedCountry() {
-    console.log('Getting country from service:', this.selectedCountry.getValue());
     return this.selectedCountry.asObservable();
   }
 
