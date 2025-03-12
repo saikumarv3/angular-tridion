@@ -3,15 +3,26 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { QuestionsService } from '../services/questions.service';
+import { TridionService, TridionContent } from '../services/tridion.service';
 
 @Component({
   selector: 'country-questions',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
+    <!-- Individual Error Messages -->
+    <div class="error-messages">
+      <div class="error-card" *ngIf="ageError">
+        {{ ageError }}
+      </div>
+      <div class="error-card" *ngFor="let error of getErrorMessages()">
+        {{ error }}
+      </div>
+    </div>
+
     <div class="questions-card">
       <div class="card-header">
-        <h3>Travel Questions</h3>
+        <h3>{{ content?.questionsTitle }}</h3>
       </div>
       
       <div class="card-body">
@@ -24,13 +35,13 @@ import { QuestionsService } from '../services/questions.service';
                 class="btn" 
                 [class.active]="answers[question] === true"
                 (click)="setAnswer(question, true)">
-                Yes
+                {{ content?.buttonLabels?.yes }}
               </button>
               <button 
                 class="btn" 
                 [class.active]="answers[question] === false"
                 (click)="setAnswer(question, false)">
-                No
+                {{ content?.buttonLabels?.no }}
               </button>
             </div>
           </ng-container>
@@ -41,8 +52,8 @@ import { QuestionsService } from '../services/questions.service';
                 class="form-control"
                 (change)="onStateChange($event)"
                 [value]="selectedState">
-                <option value="">Select State</option>
-                <option *ngFor="let state of states" [value]="state">
+                <option value="">Select your state</option>
+                <option *ngFor="let state of content?.states" [value]="state">
                   {{ state }}
                 </option>
               </select>
@@ -55,7 +66,7 @@ import { QuestionsService } from '../services/questions.service';
                 class="form-control"
                 (change)="onDobChange('month', $event)"
                 [value]="selectedDob.month">
-                <option value="">Month</option>
+                <option value="">{{ content?.dateLabels?.placeholder?.month }}</option>
                 <option *ngFor="let month of months" [value]="month">
                   {{ month }}
                 </option>
@@ -65,7 +76,7 @@ import { QuestionsService } from '../services/questions.service';
                 class="form-control"
                 (change)="onDobChange('day', $event)"
                 [value]="selectedDob.day">
-                <option value="">Day</option>
+                <option value="">{{ content?.dateLabels?.placeholder?.day }}</option>
                 <option *ngFor="let day of days" [value]="day">
                   {{ day }}
                 </option>
@@ -75,7 +86,7 @@ import { QuestionsService } from '../services/questions.service';
                 class="form-control"
                 (change)="onDobChange('year', $event)"
                 [value]="selectedDob.year">
-                <option value="">Year</option>
+                <option value="">{{ content?.dateLabels?.placeholder?.year }}</option>
                 <option *ngFor="let year of years" [value]="year">
                   {{ year }}
                 </option>
@@ -85,6 +96,7 @@ import { QuestionsService } from '../services/questions.service';
         </div>
 
         <div *ngIf="countrySpecificQuestions.length > 0" class="country-specific-questions">
+          <h4>{{ content?.countrySpecificQuestions?.title }}</h4>
           <div *ngFor="let question of countrySpecificQuestions" class="question-item">
             <p>{{ question }}</p>
             <div class="btn-group">
@@ -92,13 +104,13 @@ import { QuestionsService } from '../services/questions.service';
                 class="btn" 
                 [class.active]="answers[question] === true"
                 (click)="setAnswer(question, true)">
-                Yes
+                {{ content?.buttonLabels?.yes }}
               </button>
               <button 
                 class="btn" 
                 [class.active]="answers[question] === false"
                 (click)="setAnswer(question, false)">
-                No
+                {{ content?.buttonLabels?.no }}
               </button>
             </div>
           </div>
@@ -106,23 +118,16 @@ import { QuestionsService } from '../services/questions.service';
       </div>
     </div>
 
-    <div *ngIf="getErrorMessages().length > 0" class="error-message">
-      <div *ngFor="let error of getErrorMessages()">{{ error }}</div>
-    </div>
-
-    <div *ngIf="ageError" class="error-message">
-      {{ ageError }}
-    </div>
-
     <div class="next-button-container">
       <button class="btn" (click)="onNextClick()" [disabled]="!canProceed">
-        Next
+        {{ content?.buttonLabels?.next }}
       </button>
     </div>
   `,
   styleUrls: ['./country-questions.component.scss']
 })
 export class CountryQuestionsComponent implements OnInit, OnDestroy {
+  content: TridionContent | null = null;
   commonQuestions: string[] = [];
   countrySpecificQuestions: string[] = [];
   selectedCountry: string = '';
@@ -139,13 +144,13 @@ export class CountryQuestionsComponent implements OnInit, OnDestroy {
 
   constructor(
     private questionsService: QuestionsService,
-    private router: Router
+    private router: Router,
+    private tridionService: TridionService
   ) {
     this.initializeData();
   }
 
   initializeData() {
-    this.states = this.questionsService.states;
     this.months = this.questionsService.months;
     this.days = this.questionsService.days;
     this.years = this.questionsService.years;
@@ -174,12 +179,31 @@ export class CountryQuestionsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // Get Tridion content
+    this.tridionService.getContent().subscribe(content => {
+      this.content = content;
+      if (content) {
+        this.states = content.states;
+        this.commonQuestions = [
+          content.commonQuestions.questions.passport,
+          content.commonQuestions.questions.travel,
+          content.commonQuestions.questions.age,
+          content.commonQuestions.questions.state
+        ];
+        // Only add DOB question if state is California
+        if (this.selectedState === 'California') {
+          this.commonQuestions.push(content.commonQuestions.questions.dob);
+        }
+      }
+    });
+
     // Subscribe to selected country
     this.questionsService.getSelectedCountry().subscribe(country => {
       this.selectedCountry = country;
-      this.countrySpecificQuestions = this.questionsService.getCountrySpecificQuestions(country);
+      if (this.content) {
+        this.countrySpecificQuestions = this.content.countrySpecificQuestions.questions[country] || [];
+      }
     });
-    this.updateQuestions();
   }
 
   ngOnDestroy() {
@@ -191,36 +215,42 @@ export class CountryQuestionsComponent implements OnInit, OnDestroy {
   }
 
   updateQuestions() {
-    this.commonQuestions = this.questionsService.getQuestions(this.selectedState);
+    if (this.content) {
+      this.commonQuestions = [
+        this.content.commonQuestions.questions.passport,
+        this.content.commonQuestions.questions.travel,
+        this.content.commonQuestions.questions.age,
+        this.content.commonQuestions.questions.state
+      ];
+      // Only add DOB question if state is California
+      if (this.selectedState === 'California') {
+        this.commonQuestions.push(this.content.commonQuestions.questions.dob);
+      }
+    }
   }
 
-  setAnswer(question: string, answer: boolean | string) {
+  setAnswer(question: string, answer: boolean) {
     this.answers[question] = answer;
-    
-    // Check age requirement immediately
-    if (question === 'Are you over 18 years old?' && answer === false) {
-      this.questionsService.validateAge(false);
-    } else if (question === 'Are you over 18 years old?' && answer === true) {
-      this.questionsService.validateAge(true);
-    }
-
-    // Clear error for this specific question
-    this.questionsService.updateAnswer(question, answer);
+    this.questionsService.setAnswer(question, answer);
   }
 
   onStateChange(event: Event) {
     const state = (event.target as HTMLSelectElement).value;
     this.selectedState = state;
     this.questionsService.setSelectedState(state);
-    this.answers['Select your state of residence:'] = state;
+    if (this.content) {
+      this.answers[this.content.commonQuestions.questions.state] = state;
+    }
     this.updateQuestions();
   }
 
-  onDobChange(type: 'day' | 'month' | 'year', event: Event) {
+  onDobChange(field: 'month' | 'day' | 'year', event: Event) {
     const value = (event.target as HTMLSelectElement).value;
-    this.selectedDob = { ...this.selectedDob, [type]: value };
+    this.selectedDob[field] = value;
     this.questionsService.setSelectedDob(this.selectedDob);
-    this.answers['Enter your date of birth:'] = this.selectedDob;
+    if (this.content) {
+      this.answers[this.content.commonQuestions.questions.dob] = this.selectedDob;
+    }
   }
 
   onNextClick() {
@@ -241,11 +271,11 @@ export class CountryQuestionsComponent implements OnInit, OnDestroy {
   }
 
   isStateQuestion(question: string): boolean {
-    return question === 'Select your state of residence:';
+    return this.content?.commonQuestions.questions.state === question;
   }
 
   isDobQuestion(question: string): boolean {
-    return question === this.questionsService.dobQuestion;
+    return this.content?.commonQuestions.questions.dob === question;
   }
 
   showDobQuestion(): boolean {

@@ -249,4 +249,22 @@ export class QuestionsService {
     this.questionErrors.next({});
     this.canProceed.next(true);
   }
+
+  setAnswer(question: string, answer: boolean | string | { day: string; month: string; year: string }) {
+    // Check age requirement immediately
+    if (question.includes('over 18 years old')) {
+      if (answer === false) {
+        this.ageError.next('You must be at least 18 years old to proceed.');
+        this.canProceed.next(false);
+      } else {
+        this.ageError.next('');
+        this.canProceed.next(true);
+      }
+    }
+
+    // Clear error for this specific question
+    const currentErrors = this.questionErrors.value;
+    delete currentErrors[question];
+    this.questionErrors.next(currentErrors);
+  }
 } 

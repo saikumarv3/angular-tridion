@@ -9,15 +9,18 @@ import { TridionService, TridionContent } from '../services/tridion.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
+    <!-- Error Messages -->
+    <div class="error-messages" *ngIf="errorMessage">
+      <div class="error-card">
+        {{ errorMessage }}
+      </div>
+    </div>
+
     <div class="terms-container" *ngIf="content">
       <h2>{{ content.termsTitle }}</h2>
       
       <div *ngIf="successMessage" class="success-message">
         {{ content.successMessage }}
-      </div>
-
-      <div *ngIf="errorMessage" class="error-message">
-        {{ errorMessage }}
       </div>
 
       <div class="terms-list">
@@ -70,15 +73,6 @@ import { TridionService, TridionContent } from '../services/tridion.service';
       margin-bottom: 1rem;
       text-align: center;
       font-weight: bold;
-    }
-
-    .error-message {
-      background-color: #ffebee;
-      color: #c62828;
-      padding: 1rem;
-      border-radius: 4px;
-      margin-bottom: 1rem;
-      text-align: center;
     }
 
     .terms-list {
