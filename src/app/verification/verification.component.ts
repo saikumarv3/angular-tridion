@@ -28,19 +28,21 @@ import { Subscription } from 'rxjs';
       <div class="questions-container">
         <div *ngFor="let question of verificationQuestions; let i = index" class="question-item">
           <p class="question-text">{{ question }}</p>
-          <div class="button-group">
-            <button 
-              [class.selected]="answers[question] === true"
-              (click)="setAnswer(question, true)"
-              class="answer-button">
-              {{ content?.buttonLabels?.yes || 'Yes' }}
-            </button>
-            <button 
-              [class.selected]="answers[question] === false"
-              (click)="setAnswer(question, false)"
-              class="answer-button">
-              {{ content?.buttonLabels?.no || 'No' }}
-            </button>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" 
+                     [name]="'verification_' + i"
+                     [checked]="answers[question] === true"
+                     (change)="setAnswer(question, true)">
+              <span>{{ content?.buttonLabels?.yes || 'Yes' }}</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" 
+                     [name]="'verification_' + i"
+                     [checked]="answers[question] === false"
+                     (change)="setAnswer(question, false)">
+              <span>{{ content?.buttonLabels?.no || 'No' }}</span>
+            </label>
           </div>
         </div>
       </div>
@@ -102,38 +104,60 @@ import { Subscription } from 'rxjs';
       margin-bottom: 25px;
       padding: 20px;
       border-radius: 8px;
-      background-color: white;
+      background-color: #f8f9fa;
       border: 1px solid #e0e0e0;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
     }
 
     .question-text {
       color: #333;
-      font-size: 16px;
-      margin-bottom: 15px;
+      font-size: 1.1rem;
+      margin: 0;
+      flex: 1;
+      text-align: left;
     }
 
-    .button-group {
+    .radio-group {
       display: flex;
-      gap: 10px;
+      gap: 2rem;
+      justify-content: flex-end;
+      min-width: 200px;
     }
 
-    .answer-button {
-      padding: 8px 20px;
-      border: 1px solid #007bff;
-      border-radius: 4px;
-      background-color: white;
-      color: #007bff;
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
       cursor: pointer;
-      transition: all 0.3s;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
 
       &:hover {
         background-color: #e6f0ff;
       }
 
-      &.selected {
-        background-color: #007bff;
-        color: white;
+      input[type="radio"] {
+        width: 18px;
+        height: 18px;
+        margin: 0;
+        cursor: pointer;
+
+        &:checked + span {
+          color: #007bff;
+          font-weight: 500;
+        }
+      }
+
+      span {
+        color: #495057;
+        font-size: 1rem;
+        transition: color 0.3s ease;
       }
     }
 
