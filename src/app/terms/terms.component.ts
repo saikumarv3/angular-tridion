@@ -172,9 +172,7 @@ export class TermsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.tridionService.getContent().subscribe(content => {
-      this.content = content;
-    });
+    this.content = this.tridionService.getCachedContent();
   }
 
   onBack() {

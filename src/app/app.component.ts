@@ -34,10 +34,7 @@ export class AppComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.tridionService.getContent().subscribe(content => {
-      if (content) {
-        this.titleService.setTitle(content.appTitle);
-      }
-    });
+    const content = this.tridionService.getCachedContent();
+    this.titleService.setTitle(content.appTitle);
   }
 }
