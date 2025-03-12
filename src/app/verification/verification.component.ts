@@ -11,7 +11,7 @@ import { Subscription } from 'rxjs';
   imports: [CommonModule],
   template: `
     <div class="verification-container">
-      <h1>{{ content?.verificationPage?.title || 'Welcome!' }}</h1>
+      <h1>{{ content?.verificationPage?.title || 'Verification' }}</h1>
       <p class="intro-message">{{ content?.verificationPage?.message || 'Please answer these verification questions before proceeding.' }}</p>
       
       <div *ngIf="selectedCountry" class="selected-country">
@@ -60,18 +60,19 @@ import { Subscription } from 'rxjs';
     .verification-container {
       max-width: 800px;
       margin: 40px auto;
-      padding: 20px;
+      padding: 24px;
       background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     .selected-country {
       text-align: center;
       margin-bottom: 20px;
-      padding: 10px;
-      background-color: #e9ecef;
-      border-radius: 4px;
+      padding: 12px;
+      background-color: white;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
       font-weight: bold;
       color: #495057;
     }
@@ -96,9 +97,11 @@ import { Subscription } from 'rxjs';
 
     .question-item {
       margin-bottom: 25px;
-      padding: 15px;
-      border-radius: 4px;
-      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      background-color: white;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
     .question-text {

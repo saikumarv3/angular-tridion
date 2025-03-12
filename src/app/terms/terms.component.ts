@@ -49,11 +49,11 @@ import { TridionService, TridionContent } from '../services/tridion.service';
   styles: [`
     .terms-container {
       max-width: 800px;
-      margin: 2rem auto;
-      padding: 2rem;
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin: 40px auto;
+      padding: 24px;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     h2 {
@@ -86,10 +86,12 @@ import { TridionService, TridionContent } from '../services/tridion.service';
     }
 
     .term-item {
-      margin-bottom: 1rem;
-      padding: 1rem;
+      margin-bottom: 16px;
+      padding: 16px;
+      background-color: white;
       border: 1px solid #e0e0e0;
-      border-radius: 4px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
     .term-item p {
@@ -99,10 +101,12 @@ import { TridionService, TridionContent } from '../services/tridion.service';
 
     .agreement-section {
       margin: 2rem 0;
-      padding: 1rem;
-      background-color: #f5f5f5;
-      border-radius: 4px;
+      padding: 20px;
+      background-color: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
       text-align: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
     .checkbox-label {

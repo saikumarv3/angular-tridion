@@ -19,8 +19,9 @@ import { FooterComponent } from './footer/footer.component';
     main {
       width: 100%;
       min-height: calc(100vh - 120px); /* Adjust based on header/footer height */
-      background-color: #f8f9fa;
+      background-color: #f0f2f5;
       padding: 20px;
+      box-sizing: border-box;
     }
   `]
 })

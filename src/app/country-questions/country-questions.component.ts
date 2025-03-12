@@ -8,7 +8,118 @@ import { QuestionsService } from '../services/questions.service';
   selector: 'country-questions',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './country-questions.component.html',
+  template: `
+    <div class="questions-card">
+      <div class="card-header">
+        <h3>Travel Questions</h3>
+      </div>
+      
+      <div class="card-body">
+        <div *ngFor="let question of commonQuestions" class="question-item">
+          <p>{{ question }}</p>
+          
+          <ng-container *ngIf="!isStateQuestion(question) && !isDobQuestion(question)">
+            <div class="btn-group">
+              <button 
+                class="btn" 
+                [class.active]="answers[question] === true"
+                (click)="setAnswer(question, true)">
+                Yes
+              </button>
+              <button 
+                class="btn" 
+                [class.active]="answers[question] === false"
+                (click)="setAnswer(question, false)">
+                No
+              </button>
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="isStateQuestion(question)">
+            <div class="state-select">
+              <select 
+                class="form-control"
+                (change)="onStateChange($event)"
+                [value]="selectedState">
+                <option value="">Select State</option>
+                <option *ngFor="let state of states" [value]="state">
+                  {{ state }}
+                </option>
+              </select>
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="isDobQuestion(question) && showDobQuestion()">
+            <div class="dob-select">
+              <select 
+                class="form-control"
+                (change)="onDobChange('month', $event)"
+                [value]="selectedDob.month">
+                <option value="">Month</option>
+                <option *ngFor="let month of months" [value]="month">
+                  {{ month }}
+                </option>
+              </select>
+              
+              <select 
+                class="form-control"
+                (change)="onDobChange('day', $event)"
+                [value]="selectedDob.day">
+                <option value="">Day</option>
+                <option *ngFor="let day of days" [value]="day">
+                  {{ day }}
+                </option>
+              </select>
+              
+              <select 
+                class="form-control"
+                (change)="onDobChange('year', $event)"
+                [value]="selectedDob.year">
+                <option value="">Year</option>
+                <option *ngFor="let year of years" [value]="year">
+                  {{ year }}
+                </option>
+              </select>
+            </div>
+          </ng-container>
+        </div>
+
+        <div *ngIf="countrySpecificQuestions.length > 0" class="country-specific-questions">
+          <div *ngFor="let question of countrySpecificQuestions" class="question-item">
+            <p>{{ question }}</p>
+            <div class="btn-group">
+              <button 
+                class="btn" 
+                [class.active]="answers[question] === true"
+                (click)="setAnswer(question, true)">
+                Yes
+              </button>
+              <button 
+                class="btn" 
+                [class.active]="answers[question] === false"
+                (click)="setAnswer(question, false)">
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="getErrorMessages().length > 0" class="error-message">
+      <div *ngFor="let error of getErrorMessages()">{{ error }}</div>
+    </div>
+
+    <div *ngIf="ageError" class="error-message">
+      {{ ageError }}
+    </div>
+
+    <div class="next-button-container">
+      <button class="btn" (click)="onNextClick()" [disabled]="!canProceed">
+        Next
+      </button>
+    </div>
+  `,
   styleUrls: ['./country-questions.component.scss']
 })
 export class CountryQuestionsComponent implements OnInit, OnDestroy {
