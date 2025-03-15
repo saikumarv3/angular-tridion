@@ -10,8 +10,15 @@ import { Subscription } from 'rxjs';
   standalone: true,
   imports: [CommonModule],
   template: `
+    <!-- Error Messages -->
+    <div class="error-messages" *ngIf="error">
+      <div class="error-card">
+        {{ error }}
+      </div>
+    </div>
+
     <div class="verification-container">
-      <h1>{{ content?.verificationPage?.title || 'Welcome!' }}</h1>
+      <h1>{{ content?.verificationPage?.title || 'Verification' }}</h1>
       <p class="intro-message">{{ content?.verificationPage?.message || 'Please answer these verification questions before proceeding.' }}</p>
       
       <div *ngIf="selectedCountry" class="selected-country">
@@ -21,25 +28,23 @@ import { Subscription } from 'rxjs';
       <div class="questions-container">
         <div *ngFor="let question of verificationQuestions; let i = index" class="question-item">
           <p class="question-text">{{ question }}</p>
-          <div class="button-group">
-            <button 
-              [class.selected]="answers[question] === true"
-              (click)="setAnswer(question, true)"
-              class="answer-button">
-              {{ content?.buttonLabels?.yes || 'Yes' }}
-            </button>
-            <button 
-              [class.selected]="answers[question] === false"
-              (click)="setAnswer(question, false)"
-              class="answer-button">
-              {{ content?.buttonLabels?.no || 'No' }}
-            </button>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" 
+                     [name]="'verification_' + i"
+                     [checked]="answers[question] === true"
+                     (change)="setAnswer(question, true)">
+              <span>{{ content?.buttonLabels?.yes || 'Yes' }}</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" 
+                     [name]="'verification_' + i"
+                     [checked]="answers[question] === false"
+                     (change)="setAnswer(question, false)">
+              <span>{{ content?.buttonLabels?.no || 'No' }}</span>
+            </label>
           </div>
         </div>
-      </div>
-
-      <div *ngIf="error" class="error-message">
-        {{ error }}
       </div>
 
       <div class="button-container">
@@ -60,18 +65,19 @@ import { Subscription } from 'rxjs';
     .verification-container {
       max-width: 800px;
       margin: 40px auto;
-      padding: 20px;
+      padding: 24px;
       background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     .selected-country {
       text-align: center;
       margin-bottom: 20px;
-      padding: 10px;
-      background-color: #e9ecef;
-      border-radius: 4px;
+      padding: 12px;
+      background-color: white;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
       font-weight: bold;
       color: #495057;
     }
@@ -96,48 +102,63 @@ import { Subscription } from 'rxjs';
 
     .question-item {
       margin-bottom: 25px;
-      padding: 15px;
-      border-radius: 4px;
+      padding: 20px;
+      border-radius: 8px;
       background-color: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
     }
 
     .question-text {
       color: #333;
-      font-size: 16px;
-      margin-bottom: 15px;
+      font-size: 1.1rem;
+      margin: 0;
+      flex: 1;
+      text-align: left;
     }
 
-    .button-group {
+    .radio-group {
       display: flex;
-      gap: 10px;
+      gap: 2rem;
+      justify-content: flex-end;
+      min-width: 200px;
     }
 
-    .answer-button {
-      padding: 8px 20px;
-      border: 1px solid #007bff;
-      border-radius: 4px;
-      background-color: white;
-      color: #007bff;
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
       cursor: pointer;
-      transition: all 0.3s;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
 
       &:hover {
         background-color: #e6f0ff;
       }
 
-      &.selected {
-        background-color: #007bff;
-        color: white;
-      }
-    }
+      input[type="radio"] {
+        width: 18px;
+        height: 18px;
+        margin: 0;
+        cursor: pointer;
 
-    .error-message {
-      color: #dc3545;
-      margin: 15px 0;
-      padding: 10px;
-      border-radius: 4px;
-      background-color: #fff3f3;
-      text-align: center;
+        &:checked + span {
+          color: #007bff;
+          font-weight: 500;
+        }
+      }
+
+      span {
+        color: #495057;
+        font-size: 1rem;
+        transition: color 0.3s ease;
+      }
     }
 
     .button-container {
@@ -194,7 +215,6 @@ export class VerificationComponent implements OnInit, OnDestroy {
     // Get the selected country first
     this.subscriptions.push(
       this.questionsService.getSelectedCountry().subscribe(country => {
-        console.log('Selected country in verification:', country);
         if (!country) {
           // If no country is selected, redirect back to home
           this.router.navigate(['/home']);
@@ -202,15 +222,9 @@ export class VerificationComponent implements OnInit, OnDestroy {
         }
         this.selectedCountry = country;
         
-        // Get content after we have the country
-        if (!this.content) {
-          this.tridionService.getContent().subscribe(content => {
-            this.content = content;
-            this.loadQuestionsIfReady();
-          });
-        } else {
-          this.loadQuestionsIfReady();
-        }
+        // Use cached content
+        this.content = this.tridionService.getCachedContent();
+        this.loadQuestionsIfReady();
       })
     );
   }
@@ -222,10 +236,7 @@ export class VerificationComponent implements OnInit, OnDestroy {
 
   loadQuestionsIfReady() {
     if (this.content && this.selectedCountry) {
-      console.log('Loading questions for:', this.selectedCountry);
-      console.log('Available questions:', this.content.verificationPage.questions);
       this.verificationQuestions = this.content.verificationPage.questions[this.selectedCountry] || [];
-      console.log('Loaded questions:', this.verificationQuestions);
     }
   }
 
@@ -235,7 +246,9 @@ export class VerificationComponent implements OnInit, OnDestroy {
   }
 
   isValid(): boolean {
-    return this.verificationQuestions.every(question => typeof this.answers[question] === 'boolean');
+    return this.verificationQuestions.every(question => 
+      typeof this.answers[question] === 'boolean'
+    );
   }
 
   onNext() {

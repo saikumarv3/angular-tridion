@@ -9,15 +9,18 @@ import { TridionService, TridionContent } from '../services/tridion.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
+    <!-- Error Messages -->
+    <div class="error-messages" *ngIf="errorMessage">
+      <div class="error-card">
+        {{ errorMessage }}
+      </div>
+    </div>
+
     <div class="terms-container" *ngIf="content">
       <h2>{{ content.termsTitle }}</h2>
       
       <div *ngIf="successMessage" class="success-message">
         {{ content.successMessage }}
-      </div>
-
-      <div *ngIf="errorMessage" class="error-message">
-        {{ errorMessage }}
       </div>
 
       <div class="terms-list">
@@ -49,11 +52,11 @@ import { TridionService, TridionContent } from '../services/tridion.service';
   styles: [`
     .terms-container {
       max-width: 800px;
-      margin: 2rem auto;
-      padding: 2rem;
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin: 40px auto;
+      padding: 24px;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     h2 {
@@ -72,24 +75,17 @@ import { TridionService, TridionContent } from '../services/tridion.service';
       font-weight: bold;
     }
 
-    .error-message {
-      background-color: #ffebee;
-      color: #c62828;
-      padding: 1rem;
-      border-radius: 4px;
-      margin-bottom: 1rem;
-      text-align: center;
-    }
-
     .terms-list {
       margin-bottom: 2rem;
     }
 
     .term-item {
-      margin-bottom: 1rem;
-      padding: 1rem;
+      margin-bottom: 16px;
+      padding: 16px;
+      background-color: white;
       border: 1px solid #e0e0e0;
-      border-radius: 4px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
     .term-item p {
@@ -99,10 +95,12 @@ import { TridionService, TridionContent } from '../services/tridion.service';
 
     .agreement-section {
       margin: 2rem 0;
-      padding: 1rem;
-      background-color: #f5f5f5;
-      border-radius: 4px;
+      padding: 20px;
+      background-color: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
       text-align: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
     .checkbox-label {
@@ -174,9 +172,7 @@ export class TermsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.tridionService.getContent().subscribe(content => {
-      this.content = content;
-    });
+    this.content = this.tridionService.getCachedContent();
   }
 
   onBack() {

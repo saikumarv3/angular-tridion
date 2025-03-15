@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
+import { TridionService, TridionContent } from './services/tridion.service';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-root',
@@ -19,9 +21,20 @@ import { FooterComponent } from './footer/footer.component';
     main {
       width: 100%;
       min-height: calc(100vh - 120px); /* Adjust based on header/footer height */
-      background-color: #f8f9fa;
+      background-color: #f0f2f5;
       padding: 20px;
+      box-sizing: border-box;
     }
   `]
 })
-export class AppComponent {}
+export class AppComponent implements OnInit {
+  constructor(
+    private tridionService: TridionService,
+    private titleService: Title
+  ) {}
+
+  ngOnInit() {
+    const content = this.tridionService.getCachedContent();
+    this.titleService.setTitle(content.appTitle);
+  }
+}
