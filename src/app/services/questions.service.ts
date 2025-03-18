@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { TridionService, TridionContent } from './tridion.service';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,9 @@ export class QuestionsService {
   private ageError = new BehaviorSubject<string>('');
   private questionErrors = new BehaviorSubject<{ [key: string]: string }>({});
   private canProceed = new BehaviorSubject<boolean>(true);
+  private answers: { [key: string]: any } = {};
+  private placeAnswers: { [key: string]: boolean } = {};
+  private placeAnswersSubject = new BehaviorSubject<{ [key: string]: boolean }>({});
 
   // Date options
   readonly months = [
@@ -21,7 +25,7 @@ export class QuestionsService {
   readonly days = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
   readonly years = Array.from({ length: 100 }, (_, i) => (new Date().getFullYear() - i).toString());
 
-  constructor(private tridionService: TridionService) {}
+  constructor(private tridionService: TridionService, private router: Router) {}
 
   // Get all questions including conditional ones
   getQuestions(state: string): string[] {
@@ -148,59 +152,85 @@ export class QuestionsService {
     let hasErrors = false;
     const newErrors: { [key: string]: string } = {};
     
-    // Check if country is selected
-    if (!currentCountry) {
-      newErrors['country'] = content.errorMessages.country;
-      hasErrors = true;
-    }
-
-    // Check age requirement
-    const ageQuestion = content.commonQuestions.questions.age;
-    if (answers[ageQuestion] === false) {
-      this.ageError.next(content.errorMessages.age);
-      hasErrors = true;
-    }
-
-    // Check if state is selected
-    const stateQuestion = content.commonQuestions.questions.state;
-    if (!currentState) {
-      newErrors[stateQuestion] = content.errorMessages.state;
-      hasErrors = true;
-    }
-
-    // Check DOB if state is California
-    const dobQuestion = content.commonQuestions.questions.dob;
-    if (currentState === 'California') {
-      const dob = this.selectedDob.getValue();
-      if (!dob.day || !dob.month || !dob.year) {
-        newErrors[dobQuestion] = content.errorMessages.dob;
+    // If we're in verification mode, only validate verification answers
+    const isVerification = this.router.url.includes('/verification');
+    if (isVerification) {
+      const verificationQuestions = content.verificationPage.questions[currentCountry] || [];
+      const unansweredQuestions = verificationQuestions.filter(question => 
+        typeof answers[question] !== 'boolean'
+      );
+      
+      if (unansweredQuestions.length > 0) {
+        newErrors['verification'] = content.verificationPage.errorMessages.required;
         hasErrors = true;
       }
-    }
+    } else {
+      // Regular validation for travel questions
+      // Check if country is selected
+      if (!currentCountry) {
+        newErrors['country'] = content.errorMessages.country;
+        hasErrors = true;
+      }
 
-    // Check for unanswered questions
-    const allQuestions = [
-      ...Object.values(content.commonQuestions.questions),
-      ...this.getCountrySpecificQuestions(currentCountry)
-    ];
-    const unansweredQuestions = allQuestions.filter(question => {
-      if (question === stateQuestion) {
-        return !currentState;
+      // Check age requirement
+      const ageQuestion = content.commonQuestions.questions.age;
+      if (answers[ageQuestion] === false) {
+        this.ageError.next(content.errorMessages.age);
+        hasErrors = true;
       }
-      if (question === dobQuestion) {
-        return currentState === 'California' && !answers[question];
+
+      // Check if state is selected
+      const stateQuestion = content.commonQuestions.questions.state;
+      if (!currentState) {
+        newErrors[stateQuestion] = content.errorMessages.state;
+        hasErrors = true;
       }
-      return answers[question] === undefined;
-    });
-    
-    if (unansweredQuestions.length > 0) {
-      // Add each unanswered question as a separate error
-      unansweredQuestions.forEach(question => {
-        if (!newErrors[question]) {
-          newErrors[question] = `${content.errorMessages.required}${question}`;
+
+      // Check DOB if state is California
+      const dobQuestion = content.commonQuestions.questions.dob;
+      if (currentState === 'California') {
+        const dob = this.selectedDob.getValue();
+        if (!dob.day || !dob.month || !dob.year) {
+          newErrors[dobQuestion] = content.errorMessages.dob;
+          hasErrors = true;
         }
+      }
+
+      // Check for unanswered questions
+      const allQuestions = [
+        content.commonQuestions.questions.passport,
+        content.commonQuestions.questions.travel,
+        content.commonQuestions.questions.age,
+        content.commonQuestions.questions.state
+      ];
+
+      // Add water question only for USA if travel answer is yes
+      if (currentCountry === 'USA' && answers[content.commonQuestions.questions.travel] === true) {
+        allQuestions.push(content.commonQuestions.questions.water);
+      }
+
+      // Add country-specific questions
+      allQuestions.push(...this.getCountrySpecificQuestions(currentCountry));
+
+      const unansweredQuestions = allQuestions.filter(question => {
+        if (question === stateQuestion) {
+          return !currentState;
+        }
+        if (question === dobQuestion) {
+          return currentState === 'California' && !answers[question];
+        }
+        return answers[question] === undefined;
       });
-      hasErrors = true;
+      
+      if (unansweredQuestions.length > 0) {
+        // Add each unanswered question as a separate error
+        unansweredQuestions.forEach(question => {
+          if (!newErrors[question]) {
+            newErrors[question] = `${content.errorMessages.required}${question}`;
+          }
+        });
+        hasErrors = true;
+      }
     }
 
     // Update errors
@@ -217,6 +247,9 @@ export class QuestionsService {
     this.ageError.next('');
     this.questionErrors.next({});
     this.canProceed.next(true);
+    this.answers = {};
+    this.placeAnswers = {};
+    this.placeAnswersSubject.next({});
   }
 
   // Reset all selections except country
@@ -245,5 +278,18 @@ export class QuestionsService {
     const currentErrors = this.questionErrors.value;
     delete currentErrors[question];
     this.questionErrors.next(currentErrors);
+  }
+
+  setPlaceAnswers(answers: { [key: string]: boolean }) {
+    this.placeAnswers = answers;
+    this.placeAnswersSubject.next(answers);
+  }
+
+  getPlaceAnswers(): Observable<{ [key: string]: boolean }> {
+    return this.placeAnswersSubject.asObservable();
+  }
+
+  getCurrentPlaceAnswers(): { [key: string]: boolean } {
+    return this.placeAnswers;
   }
 } 

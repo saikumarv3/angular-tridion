@@ -21,6 +21,7 @@ export interface TridionContent {
     questions: {
       passport: string;
       travel: string;
+      water: string;
       age: string;
       state: string;
       dob: string;
@@ -72,6 +73,23 @@ export interface TridionContent {
     };
     errorMessages: {
       required: string;
+    };
+  };
+
+  // Places to visit page content
+  placesToVisit: {
+    title: string;
+    message: string;
+    errorMessages: {
+      required: string;
+    };
+    places: {
+      [country: string]: Array<{
+        name: string;
+        description: string;
+        mustVisit: boolean;
+        bestTimeToVisit: string;
+      }>;
     };
   };
 }
@@ -127,6 +145,7 @@ export class TridionService {
         questions: {
           passport: 'Do you have a valid passport?',
           travel: 'Have you traveled internationally before?',
+          water: 'Are you on water?',
           age: 'Are you over 18 years old?',
           state: 'Select your state of residence:',
           dob: 'Enter your date of birth:'
@@ -219,6 +238,77 @@ export class TridionService {
         },
         errorMessages: {
           required: 'Please answer all verification questions to proceed.'
+        }
+      },
+
+      // Add places to visit content
+      placesToVisit: {
+        title: 'Places You Might Want to Visit',
+        message: 'Please tell us if you would be interested in visiting these popular destinations.',
+        errorMessages: {
+          required: 'Please answer all questions about places you would like to visit.'
+        },
+        places: {
+          'United States': [
+            {
+              name: 'New York City',
+              description: 'Experience the vibrant culture, iconic landmarks, and diverse food scene of the Big Apple.',
+              mustVisit: true,
+              bestTimeToVisit: 'Spring (April-June) or Fall (September-November)'
+            },
+            {
+              name: 'Grand Canyon',
+              description: 'Witness one of the world\'s most spectacular natural wonders in Arizona.',
+              mustVisit: true,
+              bestTimeToVisit: 'March to May or September to November'
+            },
+            {
+              name: 'San Francisco',
+              description: 'Visit the Golden Gate Bridge, ride cable cars, and explore the city\'s unique neighborhoods.',
+              mustVisit: true,
+              bestTimeToVisit: 'September to November'
+            }
+          ],
+          'United Kingdom': [
+            {
+              name: 'London',
+              description: 'Explore historic landmarks, world-class museums, and diverse cultural experiences.',
+              mustVisit: true,
+              bestTimeToVisit: 'March to May'
+            },
+            {
+              name: 'Edinburgh',
+              description: 'Discover Scotland\'s capital with its medieval Old Town and elegant Georgian New Town.',
+              mustVisit: true,
+              bestTimeToVisit: 'June to August'
+            },
+            {
+              name: 'Bath',
+              description: 'Visit the Roman Baths and admire the Georgian architecture in this UNESCO World Heritage city.',
+              mustVisit: true,
+              bestTimeToVisit: 'April to October'
+            }
+          ],
+          'Canada': [
+            {
+              name: 'Banff National Park',
+              description: 'Experience the stunning Rocky Mountains, pristine lakes, and abundant wildlife.',
+              mustVisit: true,
+              bestTimeToVisit: 'June to August or December to March'
+            },
+            {
+              name: 'Vancouver',
+              description: 'Enjoy the perfect blend of urban life and outdoor activities in this coastal city.',
+              mustVisit: true,
+              bestTimeToVisit: 'June to September'
+            },
+            {
+              name: 'Quebec City',
+              description: 'Step into a piece of Europe in North America with its French heritage and historic architecture.',
+              mustVisit: true,
+              bestTimeToVisit: 'June to September or December to February'
+            }
+          ]
         }
       }
     };

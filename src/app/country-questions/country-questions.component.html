@@ -78,7 +78,7 @@
         </div>
       </div>
       
-      <div *ngIf="countrySpecificQuestions.length > 0" class="country-specific-questions">
+      <div *ngIf="countrySpecificQuestions.length > 0" c lass="country-specific-questions">
         <h4>{{ selectedCountry }} Specific Questions</h4>
         <div *ngFor="let question of countrySpecificQuestions; let i = index" class="question-item">
           <p>{{ i + 1 }}. {{ question }}</p>

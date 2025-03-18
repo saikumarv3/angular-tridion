@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { QuestionsService } from '../services/questions.service';
 import { TridionService, TridionContent } from '../services/tridion.service';
 
@@ -20,7 +20,42 @@ import { TridionService, TridionContent } from '../services/tridion.service';
       </div>
     </div>
 
-    <div class="questions-card">
+    <!-- Verification Mode -->
+    <div class="questions-card" *ngIf="isVerification && content">
+      <div class="card-header">
+        <h3>{{ content.verificationPage.title }}</h3>
+        <p class="intro-message">{{ content.verificationPage.message }}</p>
+        <div class="selected-country">
+          Selected Country: <strong>{{ selectedCountry }}</strong>
+        </div>
+      </div>
+      
+      <div class="card-body">
+        <div *ngFor="let question of verificationQuestions; let i = index" 
+             class="question-item">
+          <p>{{ i + 1 }}. {{ question }}</p>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" 
+                     [name]="'verification_' + i"
+                     [checked]="verificationAnswers[question] === true"
+                     (change)="setVerificationAnswer(question, true)">
+              <span>{{ content.buttonLabels.yes }}</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" 
+                     [name]="'verification_' + i"
+                     [checked]="verificationAnswers[question] === false"
+                     (change)="setVerificationAnswer(question, false)">
+              <span>{{ content.buttonLabels.no }}</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Regular Questions Mode -->
+    <div class="questions-card" *ngIf="!isVerification && content">
       <div class="card-header">
         <h3>{{ content?.questionsTitle }}</h3>
       </div>
@@ -124,18 +159,160 @@ import { TridionService, TridionContent } from '../services/tridion.service';
       </div>
     </div>
 
-    <div class="next-button-container">
-      <button class="btn" (click)="onNextClick()" [disabled]="!canProceed">
+    <div class="button-container">
+      <button *ngIf="isVerification" 
+              class="btn-back" 
+              (click)="onBack()">
+        {{ content?.buttonLabels?.back }}
+      </button>
+      <button class="btn-next" 
+              (click)="onNextClick()" 
+              [disabled]="!canProceed">
         {{ content?.buttonLabels?.next }}
       </button>
     </div>
   `,
-  styleUrls: ['./country-questions.component.scss']
+  styles: [`
+    .questions-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      text-align: center;
+      margin-bottom: 30px;
+
+      h3 {
+        color: #2c3e50;
+        margin-bottom: 15px;
+        font-size: 24px;
+      }
+    }
+
+    .intro-message {
+      color: #666;
+      font-size: 16px;
+      line-height: 1.6;
+      margin: 15px 0;
+    }
+
+    .selected-country {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+      font-size: 18px;
+      margin: 15px 0;
+
+      strong {
+        color: #0056b3;
+      }
+    }
+
+    .question-item {
+      margin-bottom: 25px;
+      padding: 15px;
+      border-bottom: 1px solid #dee2e6;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      p {
+        font-size: 16px;
+        color: #2c3e50;
+        margin-bottom: 15px;
+      }
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: 4px;
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      transition: all 0.2s;
+
+      &:hover {
+        background-color: #e9ecef;
+      }
+
+      input[type="radio"] {
+        margin: 0;
+      }
+    }
+
+    .error-messages {
+      margin-bottom: 20px;
+
+      .error-card {
+        background-color: #fde8e8;
+        color: #e74c3c;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+      }
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      padding: 0 20px;
+
+      button {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+    }
+
+    .btn-back {
+      background-color: #6c757d;
+      color: white;
+
+      &:hover {
+        background-color: #5a6268;
+      }
+    }
+
+    .btn-next {
+      background-color: #0056b3;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background-color: #004494;
+      }
+    }
+  `]
 })
 export class CountryQuestionsComponent implements OnInit, OnDestroy {
   content: TridionContent | null = null;
   commonQuestions: string[] = [];
   countrySpecificQuestions: string[] = [];
+  verificationQuestions: string[] = [];
+  verificationAnswers: { [key: string]: boolean } = {};
   selectedCountry: string = '';
   selectedState: string = '';
   states: string[] = [];
@@ -147,10 +324,12 @@ export class CountryQuestionsComponent implements OnInit, OnDestroy {
   ageError: string = '';
   questionErrors: { [key: string]: string } = {};
   canProceed: boolean = true;
+  isVerification: boolean = false;
 
   constructor(
     private questionsService: QuestionsService,
     private router: Router,
+    private route: ActivatedRoute,
     private tridionService: TridionService
   ) {
     this.initializeData();
@@ -185,47 +364,161 @@ export class CountryQuestionsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // Check if we're in verification mode
+    this.route.data.subscribe(data => {
+      this.isVerification = data['isVerification'] || false;
+    });
+
     // Use cached content
     this.content = this.tridionService.getCachedContent();
+    
+    // Subscribe to selected country
+    this.questionsService.getSelectedCountry().subscribe(country => {
+      this.selectedCountry = country;
+      if (!country && this.isVerification) {
+        // If no country is selected in verification mode, go back to home
+        this.router.navigate(['/home']);
+        return;
+      }
+
+      if (this.content) {
+        if (this.isVerification) {
+          // Get verification questions for the selected country
+          this.verificationQuestions = this.content.verificationPage.questions[country] || [];
+        } else {
+          // Regular mode - get country specific questions
+          this.countrySpecificQuestions = this.content.countrySpecificQuestions.questions[country] || [];
+          // Initialize common questions
+          this.initializeCommonQuestions();
+        }
+      }
+    });
+
+    if (!this.isVerification) {
+      // Only subscribe to these in regular mode
+      this.questionsService.getSelectedState().subscribe(state => {
+        this.selectedState = state;
+        this.updateQuestions();
+      });
+
+      this.questionsService.getSelectedDob().subscribe(dob => {
+        this.selectedDob = dob;
+      });
+    }
+  }
+
+  initializeCommonQuestions() {
     if (this.content) {
-      this.states = this.content.states;
       this.commonQuestions = [
         this.content.commonQuestions.questions.passport,
-        this.content.commonQuestions.questions.travel,
+        this.content.commonQuestions.questions.travel
+      ];
+
+      // Add water question if USA is selected and travel answer is yes
+      if (this.selectedCountry === 'USA' && this.answers[this.content.commonQuestions.questions.travel] === true) {
+        this.commonQuestions.push(this.content.commonQuestions.questions.water);
+      }
+
+      // Add remaining questions
+      this.commonQuestions.push(
         this.content.commonQuestions.questions.age,
         this.content.commonQuestions.questions.state
-      ];
-      // Only add DOB question if state is California
+      );
+
       if (this.selectedState === 'California') {
         this.commonQuestions.push(this.content.commonQuestions.questions.dob);
       }
     }
+  }
 
-    // Subscribe to selected country
-    this.questionsService.getSelectedCountry().subscribe(country => {
-      this.selectedCountry = country;
-      if (this.content) {
-        this.countrySpecificQuestions = this.content.countrySpecificQuestions.questions[country] || [];
-      }
+  setVerificationAnswer(question: string, answer: boolean) {
+    this.verificationAnswers[question] = answer;
+    this.validateVerificationAnswers();
+  }
+
+  validateVerificationAnswers() {
+    const allAnswered = this.verificationQuestions.every(
+      question => typeof this.verificationAnswers[question] === 'boolean'
+    );
+
+    if (!allAnswered) {
+      this.questionErrors['verification'] = this.content?.verificationPage.errorMessages.required || 
+                                         'Please answer all verification questions to proceed.';
+      this.canProceed = false;
+    } else {
+      delete this.questionErrors['verification'];
+      this.canProceed = true;
+    }
+  }
+
+  onBack() {
+    // Preserve the country when going back
+    const currentCountry = this.selectedCountry;
+    this.router.navigate(['/home']).then(() => {
+      this.questionsService.setSelectedCountry(currentCountry);
     });
   }
 
-  ngOnDestroy() {
-    // Do not reset when navigating to verification
-    // Only reset if not going to verification
-    if (this.router.url !== '/verification') {
-      this.questionsService.resetAll();
+  onNextClick() {
+    if (this.isVerification) {
+      if (this.isValidVerification()) {
+        // Store verification answers in the service
+        Object.entries(this.verificationAnswers).forEach(([question, answer]) => {
+          this.answers[question] = answer;
+        });
+        // Store answers in the service
+        if (this.questionsService.validateOnNext(this.answers)) {
+          // Log verification answers
+          console.log('Verification Answers:', {
+            country: this.selectedCountry,
+            answers: this.verificationAnswers
+          });
+          // Navigate to places to visit
+          this.router.navigate(['/places-to-visit']);
+        }
+      } else {
+        this.questionErrors['verification'] = this.content?.verificationPage.errorMessages.required || 
+                                           'Please answer all verification questions to proceed.';
+      }
+    } else {
+      const isValid = this.questionsService.validateOnNext(this.answers);
+      if (isValid) {
+        // Log regular questions answers
+        console.log('Regular Questions Answers:', {
+          country: this.selectedCountry,
+          state: this.selectedState,
+          answers: this.answers,
+          dateOfBirth: this.selectedDob
+        });
+        this.router.navigate(['/verification']);
+      }
     }
+  }
+
+  isValidVerification(): boolean {
+    return this.verificationQuestions.every(
+      question => typeof this.verificationAnswers[question] === 'boolean'
+    );
   }
 
   updateQuestions() {
     if (this.content) {
       this.commonQuestions = [
         this.content.commonQuestions.questions.passport,
-        this.content.commonQuestions.questions.travel,
+        this.content.commonQuestions.questions.travel
+      ];
+
+      // Add water question if USA is selected and travel answer is yes
+      if (this.selectedCountry === 'USA' && this.answers[this.content.commonQuestions.questions.travel] === true) {
+        this.commonQuestions.push(this.content.commonQuestions.questions.water);
+      }
+
+      // Add remaining questions
+      this.commonQuestions.push(
         this.content.commonQuestions.questions.age,
         this.content.commonQuestions.questions.state
-      ];
+      );
+
       // Only add DOB question if state is California
       if (this.selectedState === 'California') {
         this.commonQuestions.push(this.content.commonQuestions.questions.dob);
@@ -236,6 +529,11 @@ export class CountryQuestionsComponent implements OnInit, OnDestroy {
   setAnswer(question: string, answer: boolean) {
     this.answers[question] = answer;
     this.questionsService.setAnswer(question, answer);
+
+    // If the travel question is answered and country is USA, update questions
+    if (question === this.content?.commonQuestions.questions.travel && this.selectedCountry === 'USA') {
+      this.updateQuestions();
+    }
   }
 
   onStateChange(event: Event) {
@@ -257,18 +555,6 @@ export class CountryQuestionsComponent implements OnInit, OnDestroy {
     }
   }
 
-  onNextClick() {
-    const isValid = this.questionsService.validateOnNext(this.answers);
-    if (isValid) {
-      // Store the current country before navigation
-      const currentCountry = this.selectedCountry;
-      this.router.navigate(['/verification']).then(() => {
-        // Ensure the country is still set after navigation
-        this.questionsService.setSelectedCountry(currentCountry);
-      });
-    }
-  }
-
   // Helper method to get all error messages as an array
   getErrorMessages(): string[] {
     return Object.values(this.questionErrors);
@@ -284,5 +570,12 @@ export class CountryQuestionsComponent implements OnInit, OnDestroy {
 
   showDobQuestion(): boolean {
     return this.selectedState === 'California';
+  }
+
+  ngOnDestroy() {
+    // Do not reset when navigating to verification or places-to-visit
+    if (!this.router.url.includes('/verification') && !this.router.url.includes('/places-to-visit')) {
+      this.questionsService.resetAll();
+    }
   }
 } 
