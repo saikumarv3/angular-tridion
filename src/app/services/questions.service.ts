@@ -292,4 +292,17 @@ export class QuestionsService {
   getCurrentPlaceAnswers(): { [key: string]: boolean } {
     return this.placeAnswers;
   }
+
+  // Add this method to store all answers
+  setAllAnswers(data: {
+    country: string;
+    state: string;
+    answers: { [key: string]: any };
+    dateOfBirth: { day: string; month: string; year: string };
+  }) {
+    this.answers = { ...data.answers };
+    this.selectedCountry.next(data.country);
+    this.selectedState.next(data.state);
+    this.selectedDob.next(data.dateOfBirth);
+  }
 } 

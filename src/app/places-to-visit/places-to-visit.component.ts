@@ -312,17 +312,23 @@ export class PlacesToVisitComponent implements OnInit, OnDestroy {
   }
 
   onBack() {
-    this.router.navigate(['/verification']);
+    // Go back to the questions page
+    this.router.navigate(['/verification'], { replaceUrl: true });
   }
 
   onNextClick() {
     if (this.validateAnswers()) {
+      // Store place visit preferences in the service
+      this.questionsService.setPlaceAnswers(this.answers);
+      
       // Log place visit preferences
       console.log('Places to Visit Preferences:', {
         country: this.selectedCountry,
         answers: this.answers
       });
-      this.router.navigate(['/terms']);
+
+      // Navigate to terms page
+      this.router.navigate(['/terms'], { replaceUrl: true });
     }
   }
 

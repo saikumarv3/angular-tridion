@@ -452,11 +452,21 @@ export class CountryQuestionsComponent implements OnInit, OnDestroy {
   }
 
   onBack() {
-    // Preserve the country when going back
-    const currentCountry = this.selectedCountry;
-    this.router.navigate(['/home']).then(() => {
-      this.questionsService.setSelectedCountry(currentCountry);
-    });
+    if (this.isVerification) {
+      // If coming from places-to-visit, go back there
+      if (this.router.url.includes('verification')) {
+        this.router.navigate(['/places-to-visit'], { replaceUrl: true });
+      } else {
+        // Otherwise, preserve the country when going back to home
+        const currentCountry = this.selectedCountry;
+        this.router.navigate(['/home']).then(() => {
+          this.questionsService.setSelectedCountry(currentCountry);
+        });
+      }
+    } else {
+      // Regular mode - go back to home
+      this.router.navigate(['/home']);
+    }
   }
 
   onNextClick() {
@@ -474,7 +484,7 @@ export class CountryQuestionsComponent implements OnInit, OnDestroy {
             answers: this.verificationAnswers
           });
           // Navigate to places to visit
-          this.router.navigate(['/places-to-visit']);
+          this.router.navigate(['/places-to-visit'], { replaceUrl: true });
         }
       } else {
         this.questionErrors['verification'] = this.content?.verificationPage.errorMessages.required || 
@@ -483,6 +493,14 @@ export class CountryQuestionsComponent implements OnInit, OnDestroy {
     } else {
       const isValid = this.questionsService.validateOnNext(this.answers);
       if (isValid) {
+        // Store all answers in the service
+        this.questionsService.setAllAnswers({
+          country: this.selectedCountry,
+          state: this.selectedState,
+          answers: this.answers,
+          dateOfBirth: this.selectedDob
+        });
+        
         // Log regular questions answers
         console.log('Regular Questions Answers:', {
           country: this.selectedCountry,
@@ -490,7 +508,9 @@ export class CountryQuestionsComponent implements OnInit, OnDestroy {
           answers: this.answers,
           dateOfBirth: this.selectedDob
         });
-        this.router.navigate(['/verification']);
+        
+        // Navigate to places to visit
+        this.router.navigate(['/places-to-visit'], { replaceUrl: true });
       }
     }
   }
