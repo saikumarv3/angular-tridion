@@ -312,7 +312,7 @@ export class PlacesToVisitComponent implements OnInit, OnDestroy {
   }
 
   onBack() {
-    // Go back to the questions page
+    // Go back to verification page
     this.router.navigate(['/verification'], { replaceUrl: true });
   }
 

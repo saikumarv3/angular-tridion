@@ -453,19 +453,11 @@ export class CountryQuestionsComponent implements OnInit, OnDestroy {
 
   onBack() {
     if (this.isVerification) {
-      // If coming from places-to-visit, go back there
-      if (this.router.url.includes('verification')) {
-        this.router.navigate(['/places-to-visit'], { replaceUrl: true });
-      } else {
-        // Otherwise, preserve the country when going back to home
-        const currentCountry = this.selectedCountry;
-        this.router.navigate(['/home']).then(() => {
-          this.questionsService.setSelectedCountry(currentCountry);
-        });
-      }
+      // In verification mode, go back to questions page
+      this.router.navigate(['/home'], { replaceUrl: true });
     } else {
-      // Regular mode - go back to home
-      this.router.navigate(['/home']);
+      // In regular mode, go back to home
+      this.router.navigate(['/home'], { replaceUrl: true });
     }
   }
 
@@ -491,6 +483,7 @@ export class CountryQuestionsComponent implements OnInit, OnDestroy {
                                            'Please answer all verification questions to proceed.';
       }
     } else {
+      // Regular questions mode
       const isValid = this.questionsService.validateOnNext(this.answers);
       if (isValid) {
         // Store all answers in the service
@@ -509,8 +502,8 @@ export class CountryQuestionsComponent implements OnInit, OnDestroy {
           dateOfBirth: this.selectedDob
         });
         
-        // Navigate to places to visit
-        this.router.navigate(['/places-to-visit'], { replaceUrl: true });
+        // Navigate to verification page
+        this.router.navigate(['/verification'], { replaceUrl: true });
       }
     }
   }
@@ -593,8 +586,9 @@ export class CountryQuestionsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    // Do not reset when navigating to verification or places-to-visit
-    if (!this.router.url.includes('/verification') && !this.router.url.includes('/places-to-visit')) {
+    // Only reset when going back to home
+    const currentUrl = this.router.url;
+    if (currentUrl === '/home' || currentUrl === '/') {
       this.questionsService.resetAll();
     }
   }
